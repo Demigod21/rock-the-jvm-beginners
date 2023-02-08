@@ -29,9 +29,9 @@ abstract class MyList[+A] {
 
   def sort(compare: (A, A) => Int) : MyList[A]
 
-  def zipWith() = ???
+  def zipWith[B, C](list: MyList[B], zip:(A,B) => C) : MyList[C]
 
-  def fold() = ???
+  def fold[B] (start : B) (operator: (B, A) => B) : B
 
 }
 
@@ -51,6 +51,11 @@ case object Empty extends MyList[Nothing] {
 
   def foreach(f: Nothing => Unit): Unit = ()
   def sort(compare: (Nothing, Nothing) => Int) : MyList[Nothing] = Empty
+
+  def zipWith[B, C](list: MyList[B], zip:(Nothing, B) => C) : MyList[C] = if(!list.isEmpty) throw new RuntimeException("Lists does not have same lenght") else Empty
+
+  def fold[B](start : B)(operator: (B, Nothing) => B) : B = start
+
 
 }
 
@@ -98,11 +103,33 @@ case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
 
   def sort(compare: (A, A) => Int) : MyList[A] = {
 
+    def insert(x: A, sortedList: MyList[A]) : MyList[A] = {
+      if(sortedList.isEmpty) new Cons(x, Empty)
+      else if (compare(x, sortedList.head) <= 0) new Cons(x, sortedList)
+      else new Cons(sortedList.head, insert(x, sortedList.tail))
+    }
+
+    val sortedTail = t.sort(compare)
+    insert(h, sortedTail)
+
   }
 
-  def zipWith() = ???
+  def zipWith[B, C](list: MyList[B], zip:(A,B) => C) : MyList[C] =
+    if(list.isEmpty) throw new RuntimeException("Lists does not have same lenght")
+    else new Cons(zip(h, list.head), t.zipWith(list.tail, zip))
 
-  def fold() = ???
+  def fold[B] (start : B) (operator: (B, A) => B) : B = {
+    val newStart = operator(start, h)
+    t.fold(newStart)(operator)
+  }
+
+  /*
+  = [1,4,7].fold(0)(+) =
+  = [4,7].fold(1)(+) =
+  = [7].fold(5)(+)
+  = [].fold(12)
+  = 12
+   */
 
 
 }
