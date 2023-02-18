@@ -43,7 +43,6 @@ object MapFlatmapFilterFor extends App {
     - map, flatMap, filter
    */
 
-  abstract 
 
 
 }
